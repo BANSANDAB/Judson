@@ -33,25 +33,25 @@
       padding-bottom: 70px;
     }
 
-    /* Modern Banner with Faded Classroom Background on the Right */
+    /* Modern Compact Banner with Faded Classroom Background */
     .app-header {
       background: linear-gradient(135deg, #172554 0%, #1e40af 55%, #2563eb 100%);
       color: white;
-      padding: 24px 30px;
-      border-radius: 0 0 28px 28px;
-      margin-bottom: 24px;
+      padding: 14px 20px;
+      border-radius: 0 0 22px 22px;
+      margin-bottom: 20px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(30, 64, 175, 0.18);
+      box-shadow: 0 6px 20px rgba(30, 64, 175, 0.16);
     }
     
-    /* Faded Classroom Artwork Graphic on Right */
+    /* Faded Classroom Artwork Graphic on Right (Compact) */
     .app-header::after {
       content: "";
       position: absolute;
       top: 0;
       right: 0;
-      width: 480px;
+      width: 260px;
       height: 100%;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500' fill='none' stroke='white' stroke-width='2' opacity='0.16'%3E%3C!-- Blackboard --%3E%3Crect x='480' y='60' width='280' height='160' rx='10' stroke-width='4'/%3E%3Cline x1='500' y1='100' x2='640' y2='100' stroke-width='3' stroke-dasharray='10 10'/%3E%3Cline x1='500' y1='130' x2='720' y2='130' stroke-width='2'/%3E%3Cline x1='500' y1='160' x2='680' y2='160' stroke-width='2'/%3E%3Cpath d='M500 190 Q540 170 580 190 T660 190' stroke-width='3' fill='none'/%3E%3C!-- Teacher Desk --%3E%3Cpath d='M460 280 L760 280 L740 380 L480 380 Z' fill='white' fill-opacity='0.08' stroke-width='3'/%3E%3Cline x1='480' y1='380' x2='480' y2='450' stroke-width='4'/%3E%3Cline x1='740' y1='380' x2='740' y2='450' stroke-width='4'/%3E%3C!-- Laptop on desk --%3E%3Crect x='580' y='235' width='70' height='45' rx='3' stroke-width='2.5'/%3E%3Cpolygon points='560,280 670,280 660,270 570,270' stroke-width='2' fill='white' fill-opacity='0.15'/%3E%3C!-- Stack of Books --%3E%3Crect x='680' y='250' width='55' height='10' rx='2' stroke-width='2'/%3E%3Crect x='685' y='240' width='50' height='10' rx='2' stroke-width='2'/%3E%3Crect x='690' y='230' width='45' height='10' rx='2' stroke-width='2'/%3E%3C!-- Student Desks --%3E%3Crect x='280' y='320' width='140' height='70' rx='8' stroke-width='3' fill='white' fill-opacity='0.06'/%3E%3Cline x1='300' y1='390' x2='300' y2='460' stroke-width='3'/%3E%3Cline x1='400' y1='390' x2='400' y2='460' stroke-width='3'/%3E%3Ccircle cx='350' cy='280' r='25' stroke-width='3' fill='none'/%3E%3Cpath d='M320 330 Q350 310 380 330' stroke-width='3'/%3E%3C!-- Bookshelf on side --%3E%3Crect x='710' y='40' width='80' height='420' rx='6' stroke-width='3' fill='none'/%3E%3Cline x1='710' y1='120' x2='790' y2='120' stroke-width='3'/%3E%3Cline x1='710' y1='200' x2='790' y2='200' stroke-width='3'/%3E%3Cline x1='710' y1='280' x2='790' y2='280' stroke-width='3'/%3E%3Cline x1='710' y1='360' x2='790' y2='360' stroke-width='3'/%3E%3C!-- Graduation Cap --%3E%3Cpolygon points='400,90 460,70 520,90 460,110' stroke-width='2.5' fill='white' fill-opacity='0.15'/%3E%3Cline x1='460' y1='110' x2='460' y2='140' stroke-width='2'/%3E%3Ccircle cx='460' cy='145' r='4' fill='white'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
@@ -65,39 +65,99 @@
       z-index: 2;
     }
 
-    /* Main Navigation Buttons Bar */
+    .header-icon-box {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .app-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    @media (max-width: 576px) {
+      .app-header {
+        padding: 10px 14px;
+        border-radius: 0 0 16px 16px;
+        margin-bottom: 14px;
+      }
+      .app-title {
+        font-size: 1.25rem;
+      }
+      .header-icon-box {
+        width: 34px;
+        height: 34px;
+        font-size: 1.1rem;
+      }
+    }
+
+    /* Main Navigation Buttons Bar - Responsive & Modern */
     .nav-tabs-custom {
       background: white;
-      padding: 8px;
-      border-radius: 18px;
+      padding: 6px;
+      border-radius: 16px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
       border: 1px solid var(--border-color);
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 24px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .nav-tabs-custom::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-tabs-custom .nav-item {
+      flex: 1 1 auto;
+      min-width: fit-content;
     }
     .nav-tabs-custom .nav-link {
       border: none;
       color: #475569;
       font-weight: 600;
-      font-size: 1rem;
-      padding: 10px 22px;
+      font-size: 0.95rem;
+      padding: 9px 18px;
       border-radius: 12px;
       transition: all 0.2s ease;
       cursor: pointer;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      white-space: nowrap;
+      width: 100%;
     }
     .nav-tabs-custom .nav-link:hover {
       color: var(--primary-light);
       background-color: var(--primary-soft);
     }
     .nav-tabs-custom .nav-link.active {
-      background-color: var(--primary);
+      background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
       color: white;
       box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+    }
+    @media (max-width: 576px) {
+      .nav-tabs-custom {
+        padding: 5px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+      }
+      .nav-tabs-custom .nav-link {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        gap: 6px;
+      }
     }
 
     /* Sub-Navigation Pills (Inside ตารางสอน) */
@@ -128,14 +188,72 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
-    /* Cards */
+    /* Cards - Modern & Responsive */
     .custom-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.03);
-      padding: 24px;
-      margin-bottom: 24px;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+      padding: 22px;
+      margin-bottom: 20px;
+      transition: all 0.2s ease;
+    }
+    @media (max-width: 768px) {
+      body {
+        font-size: 14.5px;
+      }
+      .container {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .custom-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+      }
+      .card-title-custom {
+        font-size: 1.05rem;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .period-slot {
+        min-height: 76px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        border-radius: 12px;
+      }
+      .subnav-pills {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .subnav-pills .subnav-btn {
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+      .table-custom th, .table-custom td {
+        padding: 8px 6px;
+        font-size: 0.82rem;
+      }
+    }
+    @media (max-width: 576px) {
+      .app-title {
+        font-size: 1.25rem;
+      }
+      .header-icon-box {
+        width: 32px;
+        height: 32px;
+        font-size: 1.05rem;
+      }
+      .form-select-lg, .form-control-lg {
+        font-size: 0.95rem;
+        padding: 0.55rem 0.85rem;
+      }
+      .btn {
+        font-size: 0.9rem;
+      }
     }
     .card-title-custom {
       font-weight: 700;
@@ -321,23 +439,11 @@
 <!-- Header Banner: System Name on Left, Faded Classroom on Right -->
 <div class="app-header">
   <div class="container header-content">
-    <div class="row align-items-center">
-      <div class="col-lg-8 text-start">
-        <div class="d-inline-flex align-items-center mb-1">
-          <span class="badge bg-white text-primary px-3 py-1 rounded-pill me-2 fw-semibold">
-            <i class="fas fa-school me-1"></i> โรงเรียนบ้านสันดาบ
-          </span>
-          <span class="badge bg-white-50 text-white px-2 py-1 rounded-pill">
-            ภาคเรียนที่ 2 / 2569
-          </span>
-        </div>
-        <h2 class="fw-bold m-0 mt-1">
-          <i class="fas fa-chalkboard-teacher me-2"></i>ระบบจัดสอนแทน
-        </h2>
-        <p class="m-0 text-white-50 mt-1 fs-6">
-          บริหารจัดการจัดสอนแทน แลกคาบสอน และจองห้องปฏิบัติการ (สพป.สมุทรสาคร)
-        </p>
+    <div class="d-flex align-items-center gap-2 py-1">
+      <div class="header-icon-box">
+        <i class="fas fa-chalkboard-teacher"></i>
       </div>
+      <h3 class="fw-bold m-0 app-title">ระบบจัดสอนแทน</h3>
     </div>
   </div>
 </div>
@@ -360,11 +466,7 @@
         <i class="fas fa-calendar-alt"></i> ตารางสอน
       </a>
     </li>
-    <li class="nav-item">
-      <a class="nav-link" onclick="switchMainTab('roomTab', this)">
-        <i class="fas fa-desktop"></i> จองห้อง
-      </a>
-    </li>
+
     <li class="nav-item">
       <a class="nav-link" onclick="switchMainTab('historyRootTab', this)">
         <i class="fas fa-history"></i> สถิติและประวัติ
@@ -405,7 +507,11 @@
           <label class="form-label fw-bold text-dark mb-1">
             <i class="fas fa-info-circle text-info me-1"></i> 3. สาเหตุการลา / หมายเหตุ
           </label>
-          <input type="text" id="leaveReason" class="form-control form-control-lg bg-light" placeholder="เช่น ลากิจ, ลาป่วย, ไปราชการ" value="ไปราชการ">
+          <select id="leaveReason" class="form-select form-select-lg bg-light">
+            <option value="ลาไปราชการ" selected>ลาไปราชการ</option>
+            <option value="ลากิจส่วนตัว">ลากิจส่วนตัว</option>
+            <option value="ลาป่วย">ลาป่วย</option>
+          </select>
           <small class="text-muted">จะแสดงในข้อความแจ้งเตือน LINE และใบคำสั่ง</small>
         </div>
       </div>
@@ -929,17 +1035,19 @@
           </div>
         </div>
 
-        <table class="table table-bordered text-center align-middle mb-3">
-          <thead class="table-light">
-            <tr>
-              <th>คาบที่</th>
-              <th>เวลา</th>
-              <th>วิชา (ห้อง)</th>
-              <th>ครูสอนแทน</th>
-            </tr>
-          </thead>
-          <tbody id="summaryTableBody"></tbody>
-        </table>
+        <div class="table-responsive mb-3">
+          <table class="table table-bordered text-center align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>คาบที่</th>
+                <th>เวลา</th>
+                <th>วิชา (ห้อง)</th>
+                <th>ครูสอนแทน</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTableBody"></tbody>
+          </table>
+        </div>
 
         <div class="alert alert-light border small text-muted mt-3 mb-0">
           <i class="fab fa-line text-success fa-lg me-1"></i>
@@ -1009,7 +1117,11 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold">📝 สาเหตุการลา / หมายเหตุ:</label>
-          <input type="text" id="editSubReason" class="form-control" placeholder="เช่น ไปราชการ, ลากิจ, ลาป่วย">
+          <select id="editSubReason" class="form-select form-select-lg">
+            <option value="ลาไปราชการ">ลาไปราชการ</option>
+            <option value="ลากิจส่วนตัว">ลากิจส่วนตัว</option>
+            <option value="ลาป่วย">ลาป่วย</option>
+          </select>
         </div>
       </div>
       <div class="modal-footer bg-light">
@@ -3429,7 +3541,18 @@
     document.getElementById('editSubSubject').value = item.subject || "";
     document.getElementById('editSubAbsentTeacher').value = item.absentTeacher || "";
     document.getElementById('editSubTeacher').value = item.subTeacher || "";
-    document.getElementById('editSubReason').value = (item.reason && item.reason !== "-") ? item.reason : "";
+    const editReasonEl = document.getElementById('editSubReason');
+    const rVal = (item.reason && item.reason !== "-") ? item.reason : "ลาไปราชการ";
+    if (editReasonEl) {
+      editReasonEl.value = rVal;
+      if (!editReasonEl.value) {
+        let opt = document.createElement('option');
+        opt.value = rVal;
+        opt.text = rVal;
+        opt.selected = true;
+        editReasonEl.appendChild(opt);
+      }
+    }
 
     new bootstrap.Modal(document.getElementById('editSubModal')).show();
   }
