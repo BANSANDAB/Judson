@@ -447,6 +447,10 @@
         <h3 class="fw-bold m-0 app-title">ระบบจัดสอนแทน</h3>
       </div>
       <div class="d-flex align-items-center gap-2 btn-no-print">
+        <button class="btn btn-sm btn-light rounded-pill px-3 py-1 shadow-sm border fw-bold text-dark d-flex align-items-center gap-1" onclick="openApiConfigModal()" title="ตั้งค่าการเชื่อมต่อ Google Apps Script Web App URL">
+          <i class="fas fa-plug text-primary"></i>
+          <span id="backendStatusBadge">เชื่อมต่อ API</span>
+        </button>
         <button class="btn btn-sm btn-light rounded-pill px-3 py-1 shadow-sm border fw-bold text-dark d-flex align-items-center gap-2" onclick="testLineConnection()" title="คลิกเพื่อทดสอบส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE">
           <i class="fab fa-line text-success fa-lg"></i>
           <span id="lineHeaderBadge">กลุ่ม LINE: ตรวจสอบสถานะ</span>
@@ -454,6 +458,19 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- แจ้งเตือนเมื่อเปิดบน GitHub Pages แต่ยังไม่ได้เชื่อมต่อ Google Apps Script -->
+<div class="container my-2 btn-no-print" id="offlineAlertBanner" style="display: none;">
+  <div class="alert alert-warning border-warning d-flex flex-wrap align-items-center justify-content-between p-3 rounded-3 shadow-sm mb-0 gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fas fa-exclamation-triangle fa-lg text-warning"></i>
+      <span><strong>แจ้งเตือน:</strong> ขณะนี้เปิดผ่าน GitHub Pages แต่ยังไม่ได้เชื่อมต่อ <strong>Google Apps Script Web App URL</strong> (ทำให้ระบบยังไม่สามารถบันทึกลง Google Sheets และส่ง LINE แจ้งเตือนจริงได้)</span>
+    </div>
+    <button class="btn btn-warning btn-sm rounded-pill fw-bold text-dark" onclick="openApiConfigModal()">
+      <i class="fas fa-plug me-1"></i> เชื่อมต่อ Web App ตอนนี้
+    </button>
   </div>
 </div>
 
@@ -1027,6 +1044,54 @@
   </div>
 </div>
 
+<!-- Modal ตั้งค่าการเชื่อมต่อ Google Apps Script Web App (สำหรับใช้งานผ่าน GitHub Pages) -->
+<div class="modal fade" id="modalApiConfig" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="fw-bold m-0"><i class="fas fa-plug me-2"></i>ตั้งค่าการเชื่อมต่อ Google Sheets & Apps Script</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-3">
+          เมื่อเปิดใช้งานเว็บแอปผ่าน <strong>GitHub Pages (bansandab.github.io/Judson/)</strong> จำเป็นต้องระบุ <strong>URL เว็บแอปของ Google Apps Script</strong> เพื่อให้สามารถอ่าน-เขียนข้อมูลลงชีต และส่งแจ้งเตือนเข้ากลุ่ม LINE ได้จริงครับ
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold"><i class="fas fa-link text-primary me-1"></i> Google Apps Script Web App URL (ลงท้ายด้วย /exec)</label>
+          <input type="url" id="cfgGasUrl" class="form-control form-control-lg" placeholder="https://script.google.com/macros/s/AKfyc.../exec">
+          <small class="text-muted">คัดลอกจาก Google Apps Script: เมนู <strong>ทำให้ใช้งานได้ (Deploy)</strong> &gt; <strong>จัดการการทำให้ใช้งานได้ (Manage deployments)</strong> &gt; <strong>URL ของเว็บแอป</strong></small>
+        </div>
+
+        <div id="cfgConnectionStatus" class="p-2 rounded bg-light border text-center fw-bold text-muted mb-3">
+          <i class="fas fa-info-circle me-1"></i> พร้อมทดสอบการเชื่อมต่อ
+        </div>
+
+        <div class="card bg-light border-0 p-3 rounded-3 mb-0">
+          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-lightbulb text-warning me-1"></i> ขั้นตอนการนำ URL มาใส่ (ทำครั้งเดียว):</h6>
+          <ol class="small text-secondary mb-0 ps-3">
+            <li>เปิดแท็บ Google Apps Script โครงการ <strong>"ระบบจัดสอนแทน V1.2"</strong></li>
+            <li>กดปุ่มสีน้ำเงิน <strong>"ทำให้ใช้งานได้ (Deploy)"</strong> มุมขวาบน ➔ เลือก <strong>"จัดการการทำให้ใช้งานได้ (Manage deployments)"</strong></li>
+            <li>กดที่ไอคอนรูปดินสอ (แก้ไข) ➔ เลือกเวอร์ชันเป็น <strong>"เวอร์ชันใหม่ (New version)"</strong></li>
+            <li>ตรวจสอบว่า <em>"ผู้มีสิทธิ์เข้าถึง (Who has access)"</em> เป็น <strong>"ทุกคน (Anyone)"</strong></li>
+            <li>กด <strong>"ทำให้ใช้งานได้ (Deploy)"</strong> แล้วคัดลอก <strong>URL ของเว็บแอป</strong> (ที่ลงท้ายด้วย <code>/exec</code>)</li>
+            <li>นำ URL มาวางในช่องด้านบนนี้ แล้วกด <strong>"ทดสอบและบันทึก"</strong></li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary px-3 rounded-pill" data-bs-dismiss="modal">ปิด</button>
+        <button class="btn btn-outline-primary px-3 rounded-pill" onclick="testLiveConnection()">
+          <i class="fas fa-vial me-1"></i> ทดสอบเชื่อมต่อ
+        </button>
+        <button class="btn btn-primary px-4 rounded-pill" onclick="saveApiConfig()">
+          <i class="fas fa-save me-1"></i> บันทึกการเชื่อมต่อ
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Confirmation & LINE Preview Modal (สอนแทน) -->
 <div class="modal fade" id="summaryModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1435,8 +1500,157 @@
     { rowId: 6, date: "2026-10-29", period: 4, absentTeacher: "ณัฏฐ์ ไตรพุทธมาศ", subTeacher: "ธนโชค ขุนพิลึก", subject: "คณิตศาสตร์", room: "ป.4", reason: "ลาป่วย", timestamp: "2026-10-29 08:10:22" }
   ];
 
-  // Global State
-  const isLocalMode = typeof google === 'undefined' || !google.script || !google.script.run;
+  // Global State & Hybrid Backend Bridge (GAS Native + GitHub Pages)
+  const isGASNative = typeof google !== 'undefined' && google.script && google.script.run;
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyb3RA7GlnF483VTjuQLQJ0gZyH7BIciSMlR1AW70BhTzko58Y1bN_6gqdYMe4vLbuI2Q/exec';
+
+  function getGasUrl() {
+    return localStorage.getItem('judson_gas_url') || DEFAULT_GAS_URL;
+  }
+
+  const isLocalMode = !isGASNative && !getGasUrl();
+
+  function setGasUrl(url) {
+    if (url) localStorage.setItem('judson_gas_url', url.trim());
+    else localStorage.removeItem('judson_gas_url');
+  }
+
+  function openApiConfigModal(autoShow) {
+    document.getElementById('cfgGasUrl').value = getGasUrl();
+    const st = document.getElementById('cfgConnectionStatus');
+    if (st) {
+      st.className = 'p-2 rounded bg-light border text-center fw-bold text-muted mb-3';
+      st.innerHTML = '<i class="fas fa-info-circle me-1"></i> พร้อมทดสอบการเชื่อมต่อ';
+    }
+    const modal = new bootstrap.Modal(document.getElementById('modalApiConfig'));
+    modal.show();
+  }
+
+  function saveApiConfig() {
+    const val = (document.getElementById('cfgGasUrl').value || '').trim();
+    if (!val) {
+      alert("กรุณากรอก Web App URL ครับ");
+      return;
+    }
+    if (!val.startsWith('https://script.google.com/macros/s/') || !val.endsWith('/exec')) {
+      if (!confirm("⚠️ URL นี้ดูเหมือนไม่ใช่ Web App URL ที่ลงท้ายด้วย /exec\nต้องการบันทึกต่อไปหรือไม่?")) {
+        return;
+      }
+    }
+    setGasUrl(val);
+    updateBackendStatusBadges();
+    const modalEl = document.getElementById('modalApiConfig');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    alert("✅ บันทึก Web App URL เรียบร้อยแล้ว! ระบบกำลังเชื่อมต่อฐานข้อมูล...");
+    window.location.reload();
+  }
+
+  function testLiveConnection() {
+    const val = (document.getElementById('cfgGasUrl').value || '').trim();
+    if (!val) {
+      alert("กรุณาระบุ URL ก่อนทดสอบครับ");
+      return;
+    }
+    const st = document.getElementById('cfgConnectionStatus');
+    st.className = 'p-2 rounded bg-warning bg-opacity-25 border text-center fw-bold text-warning-emphasis mb-3';
+    st.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังทดสอบเชื่อมต่อ Google Apps Script...';
+
+    fetch(val, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getInitialData' })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.success) {
+        st.className = 'p-2 rounded bg-success bg-opacity-25 border text-center fw-bold text-success mb-3';
+        st.innerHTML = '<i class="fas fa-check-circle me-1"></i> เชื่อมต่อสำเร็จ! พบข้อมูลครู ' + (data.teachers ? data.teachers.length : 0) + ' ท่าน, กลุ่ม LINE ID: ' + (data.lineGroupId || 'พบแล้ว');
+      } else {
+        st.className = 'p-2 rounded bg-danger bg-opacity-25 border text-center fw-bold text-danger mb-3';
+        st.innerHTML = '<i class="fas fa-times-circle me-1"></i> ตอบกลับผิดพลาด: ' + (data ? (data.error || JSON.stringify(data)) : 'ไม่ทราบสาเหตุ');
+      }
+    })
+    .catch(err => {
+      st.className = 'p-2 rounded bg-danger bg-opacity-25 border text-center fw-bold text-danger mb-3';
+      st.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> เชื่อมต่อไม่สำเร็จ: ' + err.message + '<br><small>กรุณาตรวจสอบว่า Deploy เป็น Anyone (ทุกคน) หรือยัง</small>';
+    });
+  }
+
+  function updateBackendStatusBadges() {
+    const bBadge = document.getElementById('backendStatusBadge');
+    const banner = document.getElementById('offlineAlertBanner');
+    const gasUrl = getGasUrl();
+
+    if (isGASNative) {
+      if (bBadge) bBadge.innerHTML = '<span class="text-success"><i class="fas fa-circle fa-xs me-1"></i>GAS Native</span>';
+      if (banner) banner.style.display = 'none';
+    } else if (gasUrl) {
+      if (bBadge) bBadge.innerHTML = '<span class="text-success"><i class="fas fa-link fa-xs me-1"></i>เชื่อมต่อชีตแล้ว</span>';
+      if (banner) banner.style.display = 'none';
+    } else {
+      if (bBadge) bBadge.innerHTML = '<span class="text-warning"><i class="fas fa-unlink fa-xs me-1"></i>ยังไม่เชื่อมต่อ</span>';
+      if (banner) banner.style.display = 'block';
+    }
+  }
+
+  function callBackend(actionName, payload, onSuccess, onError) {
+    if (isGASNative) {
+      const runner = google.script.run
+        .withFailureHandler(function(err) {
+          if (onError) onError(err);
+          else {
+            showLoader(false);
+            alert("❌ ข้อผิดพลาด Apps Script: " + (err.message || err));
+          }
+        })
+        .withSuccessHandler(function(res) {
+          const parsed = typeof res === 'string' ? JSON.parse(res) : res;
+          if (onSuccess) onSuccess(parsed);
+        });
+
+      if (actionName === 'getInitialData') runner.getInitialData();
+      else if (actionName === 'saveBulkSubstitutions') runner.saveBulkSubstitutions(payload.rows, payload.reason);
+      else if (actionName === 'deleteSubstitution') runner.deleteSubstitution(payload.rowId);
+      else if (actionName === 'updateSubstitution') runner.updateSubstitution(payload.rowId, payload.updatedData);
+      else if (actionName === 'savePeriodSwap') runner.savePeriodSwap(payload);
+      else if (actionName === 'deletePeriodSwap') runner.deletePeriodSwap(payload.id);
+      else if (actionName === 'saveRoomBooking') runner.saveRoomBooking(payload);
+      else if (actionName === 'deleteRoomBooking') runner.deleteRoomBooking(payload.id);
+      else if (actionName === 'testLineNotification') runner.testLineNotification();
+      else if (actionName === 'getTeacherSubSummary') runner.getTeacherSubSummary(payload.teacherName);
+      return;
+    }
+
+    const gasUrl = getGasUrl();
+    if (!gasUrl) {
+      showLoader(false);
+      openApiConfigModal(true);
+      return;
+    }
+
+    fetch(gasUrl, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: actionName, data: payload })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      if (onSuccess) onSuccess(parsed);
+    })
+    .catch(err => {
+      showLoader(false);
+      console.error("Backend fetch error:", err);
+      if (onError) onError(err);
+      else alert("❌ เชื่อมต่อ Google Apps Script ไม่สำเร็จ:\n" + err.message + "\n\nกรุณาตรวจสอบว่า Deploy แบบ 'Anyone' (ทุกคน) หรือไม่");
+    });
+  }
+
   let globalDB = {
     teachers: defaultTeachers,
     timetable: defaultTimetable,
@@ -2025,48 +2239,43 @@
       if (storedBookings) globalDB.roomBookings = JSON.parse(storedBookings);
     } catch(e) {}
 
-    if (isLocalMode) {
-      console.log("Local Mode: ใช้งานข้อมูลในเครื่อง");
-      populateAllDropdowns();
-      renderSulothornRoomSchedule();
-      renderRoomBookingsTable();
-      renderSwapRecordsTable();
-      renderHistoryTable();
-      renderClassSchedule('ป.1');
-      onSwapDateOrTeacherChange();
-    } else {
+    updateBackendStatusBadges();
+
+    populateAllDropdowns();
+    renderClassSchedule('ป.1');
+    renderSulothornRoomSchedule();
+    renderRoomBookingsTable();
+    renderSwapRecordsTable();
+    renderHistoryTable();
+    onSwapDateOrTeacherChange();
+
+    if (isGASNative || getGasUrl()) {
       showLoader(true, "กำลังโหลดข้อมูลจาก Google Sheets...");
-      google.script.run
-        .withFailureHandler(function(err) {
-          showLoader(false);
-          populateAllDropdowns();
-          renderSulothornRoomSchedule();
-          renderHistoryTable();
-          onSwapDateOrTeacherChange();
-        })
-        .withSuccessHandler(function(json) {
-          const res = typeof json === "string" ? JSON.parse(json) : json;
-          if (res && res.success) {
-            globalDB.teachers = res.teachers || defaultTeachers;
-            globalDB.timetable = res.timetable || defaultTimetable;
-            if (res.subs && res.subs.length > 0) globalDB.subs = res.subs;
-            if (res.swaps && res.swaps.length > 0) globalDB.swaps = res.swaps;
-            if (res.roomBookings && res.roomBookings.length > 0) globalDB.roomBookings = res.roomBookings;
-            if (res.lineGroupId) globalDB.lineGroupId = res.lineGroupId;
-          }
-          if (globalDB && globalDB.lineGroupId) {
-            const badge = document.getElementById('lineHeaderBadge');
-            if (badge) badge.innerText = 'กลุ่ม LINE: ' + globalDB.lineGroupId.substring(0, 9) + '...';
-          }
-          populateAllDropdowns();
-          renderSulothornRoomSchedule();
-          renderRoomBookingsTable();
-          renderSwapRecordsTable();
-          renderHistoryTable();
-          renderClassSchedule('ป.1');
-          onSwapDateOrTeacherChange();
-          showLoader(false);
-        }).getInitialData();
+      callBackend('getInitialData', {}, function(res) {
+        if (res && res.success) {
+          globalDB.teachers = res.teachers || defaultTeachers;
+          globalDB.timetable = res.timetable || defaultTimetable;
+          if (res.subs && res.subs.length > 0) globalDB.subs = res.subs;
+          if (res.swaps && res.swaps.length > 0) globalDB.swaps = res.swaps;
+          if (res.roomBookings && res.roomBookings.length > 0) globalDB.roomBookings = res.roomBookings;
+          if (res.lineGroupId) globalDB.lineGroupId = res.lineGroupId;
+        }
+        if (globalDB && globalDB.lineGroupId) {
+          const badge = document.getElementById('lineHeaderBadge');
+          if (badge) badge.innerText = 'กลุ่ม LINE: ' + globalDB.lineGroupId.substring(0, 9) + '...';
+        }
+        populateAllDropdowns();
+        renderSulothornRoomSchedule();
+        renderRoomBookingsTable();
+        renderSwapRecordsTable();
+        renderHistoryTable();
+        renderClassSchedule('ป.1');
+        onSwapDateOrTeacherChange();
+        showLoader(false);
+      }, function(err) {
+        showLoader(false);
+        console.warn("Could not fetch online data:", err);
+      });
     }
   };
 
@@ -2645,7 +2854,8 @@
   function confirmSave() {
     bootstrap.Modal.getInstance(document.getElementById('summaryModal')).hide();
 
-    if (isLocalMode) {
+    // หากเปิดแบบ Offline โดยไม่มีทั้ง GAS Native และไม่ได้ต่อ Web App URL
+    if (!isGASNative && !getGasUrl()) {
       showLoader(true, "กำลังบันทึกข้อมูล...");
       setTimeout(() => {
         const now = new Date();
@@ -2673,7 +2883,7 @@
         loadSchedule();
         renderHistoryTable();
         showLoader(false);
-        alert("✅ บันทึกข้อมูลและจำลองการแจ้งเตือน LINE เรียบร้อยแล้ว!");
+        alert("⚠️ บันทึกข้อมูลลงในเบราว์เซอร์เครื่องนี้เท่านั้น (โหมด Offline)\nหากต้องการให้บันทึกลง Google Sheets และส่งแจ้งเตือนเข้ากลุ่ม LINE จริง กรุณากดปุ่ม 'เชื่อมต่อ API' ด้านบน เพื่อระบุ Web App URL ครับ");
       }, 400);
       return;
     }
@@ -2681,15 +2891,17 @@
     showLoader(true, "กำลังบันทึกข้อมูลและส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE...");
     const reason = document.getElementById('leaveReason').value || "-";
 
-    google.script.run
-      .withFailureHandler(function(err) {
-        showLoader(false);
-        alert("❌ บันทึกไม่สำเร็จ: " + err.message);
-      })
-      .withSuccessHandler(function(res) {
-        google.script.run.withSuccessHandler(function(json) {
-          const freshData = typeof json === "string" ? JSON.parse(json) : json;
-          globalDB = freshData;
+    callBackend(
+      'saveBulkSubstitutions',
+      { rows: currentAssignments, reason: reason },
+      function(res) {
+        callBackend('getInitialData', {}, function(freshData) {
+          if (freshData && freshData.success) {
+            globalDB = freshData;
+            try {
+              localStorage.setItem('sandab_subs_v3', JSON.stringify(globalDB.subs));
+            } catch(e) {}
+          }
           if (globalDB && globalDB.lineGroupId) {
             const badge = document.getElementById('lineHeaderBadge');
             if (badge) badge.innerText = 'กลุ่ม LINE: ' + globalDB.lineGroupId.substring(0, 9) + '...';
@@ -2703,34 +2915,39 @@
           } else {
             alert((res && res.message) || "บันทึกข้อมูลและส่งแจ้งเตือนเข้ากลุ่ม LINE เรียบร้อยแล้ว!");
           }
-        }).getInitialData();
-      }).saveBulkSubstitutions(currentAssignments, reason);
+        }, function(freshErr) {
+          showLoader(false);
+          alert((res && res.message) || "บันทึกข้อมูลเรียบร้อยแล้ว!");
+        });
+      },
+      function(err) {
+        showLoader(false);
+        alert("❌ บันทึกไม่สำเร็จ: " + (err.message || err));
+      }
+    );
   }
 
   function testLineConnection() {
-    if (isLocalMode) {
-      alert("⚠️ ขณะนี้เปิดในโหมด Offline / จำลองในเครื่อง (Local Mode)\nฟังก์ชันการส่งข้อความเข้ากลุ่ม LINE จริงจะทำงานเมื่อเปิดใช้งานผ่านลิงก์ Web App ของ Google Apps Script ครับ");
+    if (!isGASNative && !getGasUrl()) {
+      openApiConfigModal(true);
       return;
     }
     showLoader(true, "กำลังทดสอบเชื่อมต่อและส่งข้อความเข้ากลุ่ม LINE...");
-    google.script.run
-      .withFailureHandler(function(err) {
-        showLoader(false);
-        alert("❌ เชื่อมต่อไม่สำเร็จ: " + err.message);
-      })
-      .withSuccessHandler(function(res) {
-        showLoader(false);
-        if (res && res.success) {
-          let msg = "✅ " + res.message + "\n\n📌 Group ID ปัจจุบัน: " + res.groupId;
-          if (res.quota && res.quota.total > 0) {
-            msg += "\n📊 โควตาข้อความ LINE เดือนนี้:\n- ใช้ไปแล้ว: " + res.quota.used + " / " + res.quota.total + " ข้อความ\n- คงเหลือ: " + res.quota.remaining + " ข้อความ";
-          }
-          alert(msg);
-        } else {
-          alert("❌ ไม่สามารถส่งข้อความเข้ากลุ่ม LINE ได้:\n" + (res ? res.message : "เกิดข้อผิดพลาด") + "\n\n📌 Group ID ปัจจุบัน: " + ((res && res.groupId) ? res.groupId : "ไม่พบ"));
+    callBackend('testLineNotification', {}, function(res) {
+      showLoader(false);
+      if (res && res.success) {
+        let msg = "✅ " + res.message + "\n\n📌 Group ID ปัจจุบัน: " + res.groupId;
+        if (res.quota && res.quota.total > 0) {
+          msg += "\n📊 โควตาข้อความ LINE เดือนนี้:\n- ใช้ไปแล้ว: " + res.quota.used + " / " + res.quota.total + " ข้อความ\n- คงเหลือ: " + res.quota.remaining + " ข้อความ";
         }
-      })
-      .testLineNotification();
+        alert(msg);
+      } else {
+        alert("❌ ไม่สามารถส่งข้อความเข้ากลุ่ม LINE ได้:\n" + (res ? res.message : "เกิดข้อผิดพลาด") + "\n\n📌 Group ID ปัจจุบัน: " + ((res && res.groupId) ? res.groupId : "ไม่พบ"));
+      }
+    }, function(err) {
+      showLoader(false);
+      alert("❌ เชื่อมต่อไม่สำเร็จ: " + (err.message || err));
+    });
   }
 
   // ================================================================
@@ -3270,13 +3487,9 @@
 
     renderSwapRecordsTable();
 
-    if (!isLocalMode && typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withFailureHandler(function(err) {
-          console.warn("GAS savePeriodSwap failed:", err);
-        })
-        .savePeriodSwap(record);
-    }
+    callBackend('savePeriodSwap', record, function() {}, function(err) {
+      console.warn("Backend savePeriodSwap failed:", err);
+    });
 
     alert(`✅ บันทึกการแลกคาบสำเร็จ!\nครู${myTeacher} (${fromRoom}) แลกคาบที่ ${fromPeriod} (${fromSubject})\nกับ ครู${targetTeacher} (สอนชดเชยวันที่ ${returnDate} คาบที่ ${returnPeriod})`);
   }
@@ -3321,13 +3534,9 @@
       } catch(e) {}
       renderSwapRecordsTable();
 
-      if (!isLocalMode && typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withFailureHandler(function(err) {
-            console.warn("GAS deletePeriodSwap failed:", err);
-          })
-          .deletePeriodSwap(id);
-      }
+      callBackend('deletePeriodSwap', { id: id }, function() {}, function(err) {
+        console.warn("Backend deletePeriodSwap failed:", err);
+      });
     }
   }
 
@@ -3452,13 +3661,9 @@
     renderSulothornRoomSchedule();
     renderRoomBookingsTable();
 
-    if (!isLocalMode && typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withFailureHandler(function(err) {
-          console.warn("GAS saveRoomBooking failed:", err);
-        })
-        .saveRoomBooking(booking);
-    }
+    callBackend('saveRoomBooking', booking, function() {}, function(err) {
+      console.warn("Backend saveRoomBooking failed:", err);
+    });
 
     alert(`✅ จองห้องปฏิบัติการสำเร็จ!\nวัน${day} คาบที่ ${activeBookingSlot.period} โดย ครู${teacher} (${grade})`);
   }
@@ -3502,13 +3707,9 @@
       renderSulothornRoomSchedule();
       renderRoomBookingsTable();
 
-      if (!isLocalMode && typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withFailureHandler(function(err) {
-            console.warn("GAS deleteRoomBooking failed:", err);
-          })
-          .deleteRoomBooking(id);
-      }
+      callBackend('deleteRoomBooking', { id: id }, function() {}, function(err) {
+        console.warn("Backend deleteRoomBooking failed:", err);
+      });
     }
   }
 
@@ -3644,18 +3845,11 @@
 
     renderHistoryTable();
 
-    if (!isLocalMode && typeof google !== 'undefined' && google.script && google.script.run) {
+    if (isGASNative || getGasUrl()) {
       showLoader(true, "กำลังอัปเดตข้อมูลลง Google Sheets...");
-      google.script.run
-        .withFailureHandler(function(err) {
-          showLoader(false);
-          alert("❌ เกิดข้อผิดพลาดในการอัปเดต Google Sheets: " + err.message);
-        })
-        .withSuccessHandler(function(res) {
-          showLoader(false);
-          alert(res && res.message ? res.message : "✅ แก้ไขข้อมูลเรียบร้อยแล้ว");
-        })
-        .updateSubstitution(rowId, {
+      callBackend('updateSubstitution', {
+        rowId: rowId,
+        updatedData: {
           date: date,
           period: period,
           room: room,
@@ -3663,7 +3857,14 @@
           absentTeacher: absentTeacher,
           subTeacher: subTeacher,
           reason: reason
-        });
+        }
+      }, function(res) {
+        showLoader(false);
+        alert(res && res.message ? res.message : "✅ แก้ไขข้อมูลเรียบร้อยแล้ว");
+      }, function(err) {
+        showLoader(false);
+        alert("❌ เกิดข้อผิดพลาดในการอัปเดต Google Sheets: " + (err.message || err));
+      });
     } else {
       alert("✅ แก้ไขข้อมูลเรียบร้อยแล้ว");
     }
@@ -3680,26 +3881,24 @@
 
     renderHistoryTable();
 
-    if (!isLocalMode && typeof google !== 'undefined' && google.script && google.script.run) {
+    if (isGASNative || getGasUrl()) {
       showLoader(true, "กำลังลบข้อมูลจาก Google Sheets...");
-      google.script.run
-        .withFailureHandler(function(err) {
-          showLoader(false);
-          alert("❌ เกิดข้อผิดพลาดในการลบ: " + err.message);
-        })
-        .withSuccessHandler(function(res) {
-          showLoader(false);
-          // อัปเดตข้อมูลล่าสุดจากชีต
-          google.script.run.withSuccessHandler(function(json) {
-            const freshData = typeof json === "string" ? JSON.parse(json) : json;
-            if (freshData && freshData.subs) {
-              globalDB.subs = freshData.subs;
-              renderHistoryTable();
-            }
-          }).getInitialData();
-          alert(res && res.message ? res.message : "✅ ลบรายการเรียบร้อยแล้ว");
-        })
-        .deleteSubstitution(rowId);
+      callBackend('deleteSubstitution', { rowId: rowId }, function(res) {
+        callBackend('getInitialData', {}, function(freshData) {
+          if (freshData && freshData.subs) {
+            globalDB.subs = freshData.subs;
+            try {
+              localStorage.setItem('sandab_subs_v3', JSON.stringify(globalDB.subs));
+            } catch(e) {}
+            renderHistoryTable();
+          }
+        });
+        showLoader(false);
+        alert(res && res.message ? res.message : "✅ ลบรายการเรียบร้อยแล้ว");
+      }, function(err) {
+        showLoader(false);
+        alert("❌ เกิดข้อผิดพลาดในการลบ: " + (err.message || err));
+      });
     } else {
       alert("✅ ลบรายการเรียบร้อยแล้ว");
     }

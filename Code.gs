@@ -4,6 +4,18 @@
  */
 
 function doGet(e) {
+  // รองรับ GET API request จาก GitHub Pages (เช่น ?action=getInitialData)
+  if (e && e.parameter && e.parameter.action) {
+    try {
+      var result = handleApiRequest(e.parameter.action, e.parameter);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch(err) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('ระบบจัดสอนแทน โรงเรียนบ้านสันดาบ')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
@@ -12,7 +24,71 @@ function doGet(e) {
 
 function doPost(e) {
   try {
-    var data = JSON.parse(e.postData.contents);
+    var contents;
+    if (e && e.postData && e.postData.contents) {
+      contents = JSON.parse(e.postData.contents);
+    } else if (e && e.parameter && e.parameter.data) {
+      contents = JSON.parse(e.parameter.data);
+    } else {
+      contents = e ? (e.parameter || {}) : {};
+    }
+
+    // 1. ถ้าเป็น LINE Webhook Event
+    if (contents.events) {
+      return handleLineWebhook(contents);
+    }
+
+    // 2. ถ้าเป็น API Request จาก GitHub Pages (bansandab.github.io)
+    var action = contents.action;
+    var data = contents.data || contents;
+    var result = handleApiRequest(action, data);
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) { 
+    Logger.log("doPost Error: " + err.message);
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function handleApiRequest(action, data) {
+  var result;
+  try {
+    if (action === 'getInitialData') {
+      var raw = getInitialData();
+      result = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    } else if (action === 'saveBulkSubstitutions') {
+      result = saveBulkSubstitutions(data.rows, data.defaultReason || data.reason);
+    } else if (action === 'deleteSubstitution') {
+      result = deleteSubstitution(Number(data.rowId));
+    } else if (action === 'updateSubstitution') {
+      result = updateSubstitution(Number(data.rowId), data.updatedData);
+    } else if (action === 'savePeriodSwap') {
+      result = savePeriodSwap(data.record || data);
+    } else if (action === 'deletePeriodSwap') {
+      result = deletePeriodSwap(data.id);
+    } else if (action === 'saveRoomBooking') {
+      result = saveRoomBooking(data.booking || data);
+    } else if (action === 'deleteRoomBooking') {
+      result = deleteRoomBooking(data.id);
+    } else if (action === 'testLineNotification') {
+      result = testLineNotification();
+    } else if (action === 'getTeacherSubSummary') {
+      result = getTeacherSubSummary(data.teacherName);
+    } else if (action === 'setupDatabase') {
+      setupDatabase();
+      result = { success: true, message: "ติดตั้งฐานข้อมูลเรียบร้อยแล้ว" };
+    } else {
+      result = { success: false, error: 'Unknown action: ' + action };
+    }
+  } catch (err) {
+    result = { success: false, error: err.toString() };
+  }
+  return result;
+}
+
+function handleLineWebhook(data) {
+  try {
     if (!data.events || data.events.length === 0) {
       return ContentService.createTextOutput("OK");
     }
