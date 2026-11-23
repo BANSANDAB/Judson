@@ -439,11 +439,20 @@
 <!-- Header Banner: System Name on Left, Faded Classroom on Right -->
 <div class="app-header">
   <div class="container header-content">
-    <div class="d-flex align-items-center gap-2 py-1">
-      <div class="header-icon-box">
-        <i class="fas fa-chalkboard-teacher"></i>
+    <div class="d-flex align-items-center justify-content-between w-100 py-1">
+      <div class="d-flex align-items-center gap-2">
+        <div class="header-icon-box">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <h3 class="fw-bold m-0 app-title">ระบบจัดสอนแทน</h3>
       </div>
-      <h3 class="fw-bold m-0 app-title">ระบบจัดสอนแทน</h3>
+      <div class="d-flex align-items-center gap-2 btn-no-print">
+        <button class="btn btn-sm btn-light rounded-pill px-3 py-1 shadow-sm border fw-bold text-dark d-flex align-items-center gap-2" onclick="testLineConnection()" title="คลิกเพื่อทดสอบส่งข้อความแจ้งเตือนเข้ากลุ่ม LINE">
+          <i class="fab fa-line text-success fa-lg"></i>
+          <span id="lineHeaderBadge">กลุ่ม LINE: ตรวจสอบสถานะ</span>
+          <span class="badge bg-success-subtle text-success border border-success-subtle">ทดสอบส่ง</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -2043,6 +2052,11 @@
             if (res.subs && res.subs.length > 0) globalDB.subs = res.subs;
             if (res.swaps && res.swaps.length > 0) globalDB.swaps = res.swaps;
             if (res.roomBookings && res.roomBookings.length > 0) globalDB.roomBookings = res.roomBookings;
+            if (res.lineGroupId) globalDB.lineGroupId = res.lineGroupId;
+          }
+          if (globalDB && globalDB.lineGroupId) {
+            const badge = document.getElementById('lineHeaderBadge');
+            if (badge) badge.innerText = 'กลุ่ม LINE: ' + globalDB.lineGroupId.substring(0, 9) + '...';
           }
           populateAllDropdowns();
           renderSulothornRoomSchedule();
@@ -2676,13 +2690,47 @@
         google.script.run.withSuccessHandler(function(json) {
           const freshData = typeof json === "string" ? JSON.parse(json) : json;
           globalDB = freshData;
+          if (globalDB && globalDB.lineGroupId) {
+            const badge = document.getElementById('lineHeaderBadge');
+            if (badge) badge.innerText = 'กลุ่ม LINE: ' + globalDB.lineGroupId.substring(0, 9) + '...';
+          }
           currentAssignments = [];
           loadSchedule();
           renderHistoryTable();
           showLoader(false);
-          alert(res.message || "บันทึกข้อมูลเรียบร้อยแล้ว!");
+          if (res && res.lineSuccess === false) {
+            alert(res.message);
+          } else {
+            alert((res && res.message) || "บันทึกข้อมูลและส่งแจ้งเตือนเข้ากลุ่ม LINE เรียบร้อยแล้ว!");
+          }
         }).getInitialData();
       }).saveBulkSubstitutions(currentAssignments, reason);
+  }
+
+  function testLineConnection() {
+    if (isLocalMode) {
+      alert("⚠️ ขณะนี้เปิดในโหมด Offline / จำลองในเครื่อง (Local Mode)\nฟังก์ชันการส่งข้อความเข้ากลุ่ม LINE จริงจะทำงานเมื่อเปิดใช้งานผ่านลิงก์ Web App ของ Google Apps Script ครับ");
+      return;
+    }
+    showLoader(true, "กำลังทดสอบเชื่อมต่อและส่งข้อความเข้ากลุ่ม LINE...");
+    google.script.run
+      .withFailureHandler(function(err) {
+        showLoader(false);
+        alert("❌ เชื่อมต่อไม่สำเร็จ: " + err.message);
+      })
+      .withSuccessHandler(function(res) {
+        showLoader(false);
+        if (res && res.success) {
+          let msg = "✅ " + res.message + "\n\n📌 Group ID ปัจจุบัน: " + res.groupId;
+          if (res.quota && res.quota.total > 0) {
+            msg += "\n📊 โควตาข้อความ LINE เดือนนี้:\n- ใช้ไปแล้ว: " + res.quota.used + " / " + res.quota.total + " ข้อความ\n- คงเหลือ: " + res.quota.remaining + " ข้อความ";
+          }
+          alert(msg);
+        } else {
+          alert("❌ ไม่สามารถส่งข้อความเข้ากลุ่ม LINE ได้:\n" + (res ? res.message : "เกิดข้อผิดพลาด") + "\n\n📌 Group ID ปัจจุบัน: " + ((res && res.groupId) ? res.groupId : "ไม่พบ"));
+        }
+      })
+      .testLineNotification();
   }
 
   // ================================================================

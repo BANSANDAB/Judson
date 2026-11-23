@@ -13,13 +13,34 @@ function doGet(e) {
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    var event = data.events && data.events[0];
-    if (event && event.source && event.source.type === 'group') {
-      var groupId = event.source.groupId;
-      var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Teacher_List");
-      if (sheet) {
-        sheet.getRange("G1").setValue("Group ID ของกลุ่มนี้คือ:");
-        sheet.getRange("H1").setValue(groupId);
+    if (!data.events || data.events.length === 0) {
+      return ContentService.createTextOutput("OK");
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Teacher_List");
+
+    for (var i = 0; i < data.events.length; i++) {
+      var event = data.events[i];
+      var source = event.source || {};
+      var groupId = source.groupId || source.roomId;
+
+      if (groupId) {
+        if (sheet) {
+          sheet.getRange("G1").setValue("Group ID ของกลุ่มนี้คือ:");
+          sheet.getRange("H1").setValue(groupId);
+        }
+
+        var replyToken = event.replyToken;
+        if (replyToken) {
+          if (event.type === 'join') {
+            replyLineMessage(replyToken, "👋 สวัสดีครับ! บอทระบบจัดสอนแทน โรงเรียนบ้านสันดาบ เชื่อมต่อเข้ากลุ่มเรียบร้อยแล้ว\n📌 Group ID: " + groupId + "\n(ระบบบันทึก Group ID ลง Google Sheets ให้อัตโนมัติแล้วครับ)");
+          } else if (event.type === 'message' && event.message && event.message.type === 'text') {
+            var txt = event.message.text.trim();
+            if (txt === 'เช็คกลุ่ม' || txt === 'groupid' || txt === 'id' || txt === 'ID' || txt === 'ทดสอบ') {
+              replyLineMessage(replyToken, "✅ สถานะ: บอทเชื่อมต่อกลุ่มนี้อยู่ครับ\n📌 Group ID: " + groupId + "\n📊 บันทึกลงในฐานข้อมูลระบบจัดสอนแทนเรียบร้อยแล้ว");
+            }
+          }
+        }
       }
     }
   } catch(err) { 
@@ -151,6 +172,14 @@ function getInitialData() {
       academicHead: "นางสาวสุจิตตรา ปางสุข"
     };
 
+    var lineGroupId = "Cce2bd2588dc0251c77376428f6a85f57";
+    if (tSheet) {
+      var savedId = tSheet.getRange("H1").getValue();
+      if (savedId && String(savedId).trim().length > 0) {
+        lineGroupId = String(savedId).trim();
+      }
+    }
+
     return JSON.stringify({ 
       success: true, 
       teachers: teachers, 
@@ -158,7 +187,8 @@ function getInitialData() {
       subs: formattedSubs,
       swaps: formattedSwaps,
       roomBookings: formattedBookings,
-      schoolInfo: schoolInfo
+      schoolInfo: schoolInfo,
+      lineGroupId: lineGroupId
     });
   } catch (err) { 
     return JSON.stringify({ success: false, error: err.message }); 
@@ -241,13 +271,27 @@ function saveBulkSubstitutions(rows, defaultReason) {
   lineMsg += "━━━━━━━━━━━━━━━━\n";
   lineMsg += "🙏 ขอขอบพระคุณคุณครูทุกท่านที่ร่วมมือปฏิบัติหน้าที่สอนแทนครับ";
   
-  sendLineBroadcast(lineMsg);
-  return { success: true, message: "บันทึกข้อมูลและส่งแจ้งเตือนเข้ากลุ่ม LINE เรียบร้อยแล้ว!" };
+  var lineResult = sendLineBroadcast(lineMsg);
+  if (lineResult && !lineResult.success) {
+    return { 
+      success: true, 
+      lineSuccess: false,
+      message: "⚠️ บันทึกข้อมูลลงฐานข้อมูลเรียบร้อยแล้ว แต่ส่งแจ้งเตือนเข้ากลุ่ม LINE ไม่สำเร็จ:\n" + lineResult.error,
+      lineError: lineResult.error,
+      groupId: lineResult.groupId
+    };
+  }
+  return { 
+    success: true, 
+    lineSuccess: true,
+    message: "บันทึกข้อมูลและส่งแจ้งเตือนเข้ากลุ่ม LINE เรียบร้อยแล้ว!" 
+  };
 }
 
 function sendLineBroadcast(message) {
   var token = "67uuUWZz/PgKmDJd7+Fdn2YcTCy3HoaWgYtD9/SqvU5D6iZcQkV2CwDsegJNytVLWaEQ0Lq37JFeCi5QJRcEypMRYdXx0D5eqVn9nKpMKWyfhwzrgx5S665vzqKr2FGR5hMHuJe+V3mK3Tms4Q4jmgdB04t89/1O/w1cDnyilFU="; 
-  var groupId = "Cce2bd2588dc0251c77376428f6a85f57"; 
+  var defaultGroupId = "Cce2bd2588dc0251c77376428f6a85f57"; 
+  var groupId = defaultGroupId;
 
   // ถ้ามีการบันทึก Group ID จาก Webhook ไว้ที่ชีต Teacher_List เซลล์ H1 ให้นำมาใช้
   try {
@@ -261,6 +305,13 @@ function sendLineBroadcast(message) {
     }
   } catch(e) {
     Logger.log("Error reading dynamic group ID: " + e.message);
+  }
+
+  if (!token) {
+    return { success: false, error: "ไม่พบคีย์ LINE Channel Access Token", groupId: groupId };
+  }
+  if (!groupId) {
+    return { success: false, error: "ไม่พบ Group ID ของกลุ่ม LINE (ตรวจสอบช่อง H1 ในชีต Teacher_List)", groupId: groupId };
   }
 
   var url = "https://api.line.me/v2/bot/message/push";
@@ -279,10 +330,110 @@ function sendLineBroadcast(message) {
   
   try {
     var res = UrlFetchApp.fetch(url, options);
-    Logger.log("LINE Response: " + res.getContentText());
+    var code = res.getResponseCode();
+    var content = res.getContentText();
+    Logger.log("LINE Response (" + code + "): " + content);
+
+    if (code === 200) {
+      return { success: true, groupId: groupId };
+    } else {
+      var errObj = {};
+      try { errObj = JSON.parse(content); } catch(ex) {}
+      var errMsg = errObj.message || content;
+      if (code === 429) {
+        errMsg = "โควตาข้อความของ LINE Bot เดือนนี้เต็มแล้ว (Free Plan 300 ข้อความ/เดือน โดยการส่งเข้ากลุ่ม 1 ครั้งจะตัดโควตาเท่ากับจำนวนสมาชิกทุกคนในกลุ่ม)";
+      } else if (code === 400) {
+        errMsg = "LINE ปฏิเสธคำขอ (Group ID ไม่ถูกต้อง หรือบอทยังไม่ได้อยู่ในกลุ่มนี้): " + errMsg;
+      } else if (code === 401) {
+        errMsg = "Channel Access Token ไม่ถูกต้องหรือหมดอายุ";
+      } else if (code === 403) {
+        errMsg = "บอทไม่ได้รับอนุญาตให้ส่งข้อความเข้ากลุ่ม (ตรวจสอบสิทธิ์ใน LINE Official Account Manager)";
+      }
+      return { success: false, code: code, error: errMsg, groupId: groupId };
+    }
   } catch (err) {
     Logger.log("LINE fetch failed: " + err.message);
+    return { success: false, error: "เกิดข้อผิดพลาดในการเชื่อมต่อ LINE API: " + err.message, groupId: groupId };
   }
+}
+
+function replyLineMessage(replyToken, messageText) {
+  var token = "67uuUWZz/PgKmDJd7+Fdn2YcTCy3HoaWgYtD9/SqvU5D6iZcQkV2CwDsegJNytVLWaEQ0Lq37JFeCi5QJRcEypMRYdXx0D5eqVn9nKpMKWyfhwzrgx5S665vzqKr2FGR5hMHuJe+V3mK3Tms4Q4jmgdB04t89/1O/w1cDnyilFU=";
+  var url = "https://api.line.me/v2/bot/message/reply";
+  var options = {
+    "method": "post",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    "payload": JSON.stringify({
+      "replyToken": replyToken,
+      "messages": [{"type": "text", "text": messageText}]
+    }),
+    "muteHttpExceptions": true
+  };
+  try {
+    UrlFetchApp.fetch(url, options);
+  } catch(e) {
+    Logger.log("Reply error: " + e.message);
+  }
+}
+
+function testLineNotification() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var tSheet = ss ? ss.getSheetByName("Teacher_List") : null;
+    var groupId = "Cce2bd2588dc0251c77376428f6a85f57";
+    if (tSheet) {
+      var savedId = tSheet.getRange("H1").getValue();
+      if (savedId && String(savedId).trim().length > 0) {
+        groupId = String(savedId).trim();
+      }
+    }
+
+    var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+    var testMsg = "🔔 [ทดสอบระบบจัดสอนแทน]\nโรงเรียนบ้านสันดาบ เชื่อมต่อกลุ่ม LINE สำเร็จแล้วครับ\n⏰ เวลาทดสอบ: " + nowStr + "\n📌 Group ID: " + groupId;
+    
+    var result = sendLineBroadcast(testMsg);
+    var quotaInfo = getLineQuotaInfo();
+    
+    return {
+      success: result.success,
+      message: result.success ? "ส่งข้อความทดสอบเข้ากลุ่ม LINE สำเร็จแล้ว!" : result.error,
+      groupId: groupId,
+      quota: quotaInfo
+    };
+  } catch(e) {
+    return { success: false, message: "เกิดข้อผิดพลาด: " + e.message };
+  }
+}
+
+function getLineQuotaInfo() {
+  var token = "67uuUWZz/PgKmDJd7+Fdn2YcTCy3HoaWgYtD9/SqvU5D6iZcQkV2CwDsegJNytVLWaEQ0Lq37JFeCi5QJRcEypMRYdXx0D5eqVn9nKpMKWyfhwzrgx5S665vzqKr2FGR5hMHuJe+V3mK3Tms4Q4jmgdB04t89/1O/w1cDnyilFU=";
+  var quota = { total: 0, used: 0, remaining: 0 };
+  try {
+    var resTotal = UrlFetchApp.fetch("https://api.line.me/v2/bot/message/quota", {
+      headers: { "Authorization": "Bearer " + token },
+      muteHttpExceptions: true
+    });
+    if (resTotal.getResponseCode() === 200) {
+      var qData = JSON.parse(resTotal.getContentText());
+      quota.total = qData.value || 0;
+    }
+    
+    var resUsage = UrlFetchApp.fetch("https://api.line.me/v2/bot/message/quota/consumption", {
+      headers: { "Authorization": "Bearer " + token },
+      muteHttpExceptions: true
+    });
+    if (resUsage.getResponseCode() === 200) {
+      var uData = JSON.parse(resUsage.getContentText());
+      quota.used = uData.totalUsage || 0;
+    }
+    quota.remaining = Math.max(0, quota.total - quota.used);
+  } catch(e) {
+    Logger.log("Error getting quota: " + e.message);
+  }
+  return quota;
 }
 
 function getTeacherSubSummary(teacherName) {
@@ -419,6 +570,11 @@ function setupDatabase() {
   
   // 1. จัดการรายชื่อครูและข้อมูลประจำชั้น
   var tSheet = ss.getSheetByName("Teacher_List") || ss.insertSheet("Teacher_List");
+  var existingGroupId = "";
+  try {
+    existingGroupId = tSheet.getRange("H1").getValue();
+  } catch(e) {}
+
   tSheet.clear();
   var teachers = [
     ["ชื่อ-สกุล", "ตำแหน่ง/หน้าที่", "ครูประจำชั้น", "สายชั้น"],
@@ -437,7 +593,10 @@ function setupDatabase() {
   ];
   tSheet.getRange(1, 1, teachers.length, 4).setValues(teachers);
   tSheet.getRange("G1").setValue("Group ID ของกลุ่มนี้คือ:");
-  tSheet.getRange("H1").setValue("Cce2bd2588dc0251c77376428f6a85f57");
+  var finalGroupId = (existingGroupId && String(existingGroupId).trim().length > 0 && String(existingGroupId).trim().startsWith("C"))
+    ? String(existingGroupId).trim()
+    : "Cce2bd2588dc0251c77376428f6a85f57";
+  tSheet.getRange("H1").setValue(finalGroupId);
 
   // 2. จัดการตารางสอนหลัก (ปีการศึกษา 2569 เทอม 2 ตรวจสอบเทียบเอกสารครบถ้วน ไร้ข้อขัดแย้ง 100%)
   var mSheet = ss.getSheetByName("Master_Timetable") || ss.insertSheet("Master_Timetable");
